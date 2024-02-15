@@ -1,5 +1,6 @@
 package org.exmaple.chatbot.api.test;
 
+import cn.bugstack.chatglm.utils.BearerTokenUtils;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import org.apache.http.HttpStatus;
@@ -33,11 +34,13 @@ public class ApiTest {
         CloseableHttpResponse response = httpClient.execute(get);
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
             String res = EntityUtils.toString(response.getEntity());
+            System.out.println(res);
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode = objectMapper.readTree(res);
             JsonNode questionlist = rootNode.get("resp_data").get("topics");
-
+            System.out.println(questionlist.get(0).get("topic_id").getClass());
             for(int i = 0;i<questionlist.size();i++){
+
                 String type = questionlist.get(i).get("type").toString();
 
                 if (type.equals("\"talk\"") && questionlist.get(i).get("talk").get("owner").get("user_id").toString().equals("812842588851182")){
@@ -78,6 +81,74 @@ public class ApiTest {
         } else {
             System.out.println(response.getStatusLine().getStatusCode());
         }
+    }
+
+    @Test
+    public void test_chatGPT() throws IOException {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+
+        String token = BearerTokenUtils.getToken("SFjlQXMOKmVrxI2o", "68f8b35c3db83068e68cd1f27ba9080a");
+        HttpPost post = new HttpPost("https://api.openai.com/v1/chat/completions");
+        post.addHeader("Content-Type", "application/json");
+        post.addHeader("Authorization", "Bearer " + token);
+        post.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+        post.addHeader("Accept", "text/event-stream");
+
+        String paramJson = "{\n" +
+                "        \"model\": \"glm-4\",\n" +
+                "        \"messages\": [\n" +
+                "        {\n" +
+                "        \"role\": \"user\",\n" +
+                "        \"content\": \"写个java冒泡排序\"\n" +
+                "        }" +
+                "]" +
+                "}";
+
+        StringEntity stringEntity = new StringEntity(paramJson, ContentType.create("text/json", "UTF-8"));
+        post.setEntity(stringEntity);
+
+        CloseableHttpResponse response = httpClient.execute(post);
+        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+            String res = EntityUtils.toString(response.getEntity());
+            System.out.println(res);
+        } else {
+            System.out.println(response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void test_chatGLM() throws IOException {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+
+        HttpPost post = new HttpPost("https://open.bigmodel.cn/api/paas/v3/model-api/chatglm_lite/sse-invoke");
+        post.addHeader("Content-Type", "application/json");
+        post.addHeader("Authorization", "Bearer 68f8b35c3db83068e68cd1f27ba9080a.SFjlQXMOKmVrxI2o");
+        post.addHeader("User-Agent", "application/json");
+        post.addHeader("Accept", "text/event-stream");
+
+        String paramJson = "{\n" +
+                "        \"top_p\": 0.7,\n" +
+                "        \"sseFormat\": \"data\",\n" +
+                "        \"temperature\": 0.9,\n" +
+                "        \"incremental\": true,\n" +
+                "        \"request_id\": \"xfg-1696992276607\",\n" +
+                "        \"prompt\": [\n" +
+                "        {\n" +
+                "        \"role\": \"user\",\n" +
+                "        \"content\": \"写个java冒泡排序\"\n" +
+                "        }]}\n";
+
+        StringEntity stringEntity = new StringEntity(paramJson, ContentType.create("text/json", "UTF-8"));
+        post.setEntity(stringEntity);
+
+        CloseableHttpResponse response = httpClient.execute(post);
+        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+            String res = EntityUtils.toString(response.getEntity());
+            System.out.println(res);
+        } else {
+            System.out.println(response.getStatusLine().getStatusCode());
+        }
+
     }
 
 }
