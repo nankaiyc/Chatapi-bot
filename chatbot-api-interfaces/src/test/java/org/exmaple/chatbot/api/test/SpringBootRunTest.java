@@ -39,7 +39,6 @@ public class SpringBootRunTest {
     @Test
     public void test_zsxqApi() throws IOException {
         UnAnsweredQuestionsAggregates unAnsweredQuestionsAggregates = zsxqApi.queryUnAnsweredQuestionsTopicId(groupId, cookie);
-        System.out.println(unAnsweredQuestionsAggregates);
         logger.info("测试结果：{}", JSON.toJSONString(unAnsweredQuestionsAggregates));
 
         List<Topics> topics = unAnsweredQuestionsAggregates.getResp_data().getTopics();
